@@ -1,0 +1,16 @@
+{
+  "block.mobprocessor.mob_processor": "Mob Processor",
+  "container.mobprocessor.mob_processor": "Mob Processor",
+  "item.mobprocessor.augment_egg": "Augmented Spawn Egg",
+  "item.mobprocessor.augment_egg.named": "Augmented %s Spawn Egg",
+  "item.mobprocessor.looting_upgrade_1": "Looting Upgrade I",
+  "item.mobprocessor.looting_upgrade_2": "Looting Upgrade II",
+  "item.mobprocessor.looting_upgrade_3": "Looting Upgrade III",
+  "item.mobprocessor.speed_upgrade_1": "Speed Upgrade I",
+  "item.mobprocessor.speed_upgrade_2": "Speed Upgrade II",
+  "item.mobprocessor.speed_upgrade_3": "Speed Upgrade III",
+  "item.mobprocessor.storage_upgrade_1": "Storage Upgrade I",
+  "item.mobprocessor.storage_upgrade_2": "Storage Upgrade II",
+  "item.mobprocessor.storage_upgrade_3": "Storage Upgrade III",
+  "item.mobprocessor.player_kill_upgrade": "Player Kill Upgrade"
+}

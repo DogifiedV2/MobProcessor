@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "mobprocessor:item/looting_upgrade_1"
+  }
+}

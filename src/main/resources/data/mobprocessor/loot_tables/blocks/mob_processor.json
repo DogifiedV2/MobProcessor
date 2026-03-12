@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mobprocessor:mob_processor",
+          "functions": [
+            {
+              "function": "minecraft:copy_nbt",
+              "source": "block_entity",
+              "ops": [
+                {
+                  "source": "EggInventory",
+                  "target": "BlockEntityTag.EggInventory",
+                  "op": "replace"
+                },
+                {
+                  "source": "UpgradeInventory",
+                  "target": "BlockEntityTag.UpgradeInventory",
+                  "op": "replace"
+                },
+                {
+                  "source": "ItemsProducedPerMob",
+                  "target": "BlockEntityTag.ItemsProducedPerMob",
+                  "op": "replace"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ]
+}
