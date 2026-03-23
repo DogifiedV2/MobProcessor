@@ -17,6 +17,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.FakePlayerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,13 +37,23 @@ public class LootTableRoller {
             ResourceLocation lootTableLocation = entityType.getDefaultLootTable();
             LootTable lootTable = serverLevel.getServer().getLootTables().get(lootTableLocation);
 
+            List<ItemStack> loot;
             if (simulatePlayerKill) {
-                return rollWithPlayerKill(serverLevel, pos, temporaryEntity, lootTable, lootingLevel);
+                loot = rollWithPlayerKill(serverLevel, pos, temporaryEntity, lootTable, lootingLevel);
             } else {
-                return rollWithoutPlayerKill(serverLevel, pos, temporaryEntity, lootTable);
+                loot = rollWithoutPlayerKill(serverLevel, pos, temporaryEntity, lootTable);
             }
+
+            addHardcodedDrops(entityType, loot);
+            return loot;
         } finally {
             temporaryEntity.discard();
+        }
+    }
+
+    private static void addHardcodedDrops(EntityType<?> entityType, List<ItemStack> loot) {
+        if (entityType == EntityType.WITHER) {
+            loot.add(new ItemStack(Items.NETHER_STAR));
         }
     }
 
@@ -72,7 +83,7 @@ public class LootTableRoller {
                     .withParameter(LootContextParams.LAST_DAMAGE_PLAYER, fakePlayer)
                     .withLuck(fakePlayer.getLuck());
 
-            return lootTable.getRandomItems(builder.create(LootContextParamSets.ENTITY));
+            return new ArrayList<>(lootTable.getRandomItems(builder.create(LootContextParamSets.ENTITY)));
         } finally {
             fakePlayer.getInventory().items.set(fakePlayer.getInventory().selected, ItemStack.EMPTY);
         }
@@ -90,6 +101,6 @@ public class LootTableRoller {
                 .withOptionalParameter(LootContextParams.KILLER_ENTITY, null)
                 .withOptionalParameter(LootContextParams.DIRECT_KILLER_ENTITY, null);
 
-        return lootTable.getRandomItems(builder.create(LootContextParamSets.ENTITY));
+        return new ArrayList<>(lootTable.getRandomItems(builder.create(LootContextParamSets.ENTITY)));
     }
 }
