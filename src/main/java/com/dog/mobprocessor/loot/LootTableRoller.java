@@ -1,31 +1,33 @@
 package com.dog.mobprocessor.loot;
 
+import com.dog.mobprocessor.mixin.LivingEntityDropInvoker;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.FakePlayerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 public class LootTableRoller {
 
     public static List<ItemStack> rollEntityLoot(ServerLevel serverLevel, BlockPos pos,
-                                                  EntityType<?> entityType, int lootingLevel,
-                                                  boolean simulatePlayerKill) {
+                                                 EntityType<?> entityType, int lootingLevel,
+                                                 boolean simulatePlayerKill) {
         Entity temporaryEntity = entityType.create(serverLevel);
         if (temporaryEntity == null) {
             return Collections.emptyList();
@@ -33,34 +35,32 @@ public class LootTableRoller {
 
         try {
             temporaryEntity.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+            initializeSpawnState(temporaryEntity, serverLevel, pos);
 
-            ResourceLocation lootTableLocation = entityType.getDefaultLootTable();
-            LootTable lootTable = serverLevel.getServer().getLootTables().get(lootTableLocation);
-
-            List<ItemStack> loot;
-            if (simulatePlayerKill) {
-                loot = rollWithPlayerKill(serverLevel, pos, temporaryEntity, lootTable, lootingLevel);
-            } else {
-                loot = rollWithoutPlayerKill(serverLevel, pos, temporaryEntity, lootTable);
+            if (temporaryEntity instanceof LivingEntity livingEntity) {
+                return rollVanillaLivingDrops(serverLevel, livingEntity, lootingLevel, simulatePlayerKill);
             }
 
-            addHardcodedDrops(entityType, loot);
-            return loot;
+            return Collections.emptyList();
         } finally {
             temporaryEntity.discard();
         }
     }
 
-    private static void addHardcodedDrops(EntityType<?> entityType, List<ItemStack> loot) {
-        if (entityType == EntityType.WITHER) {
-            loot.add(new ItemStack(Items.NETHER_STAR));
+    private static void initializeSpawnState(Entity entity, ServerLevel serverLevel, BlockPos pos) {
+        if (entity instanceof Mob mob) {
+            DifficultyInstance difficulty = serverLevel.getCurrentDifficultyAt(pos);
+            mob.finalizeSpawn(serverLevel, difficulty, MobSpawnType.SPAWN_EGG, null, null);
         }
     }
 
-    private static List<ItemStack> rollWithPlayerKill(ServerLevel serverLevel, BlockPos pos,
-                                                       Entity temporaryEntity, LootTable lootTable,
-                                                       int lootingLevel) {
+    private static List<ItemStack> rollVanillaLivingDrops(ServerLevel serverLevel, LivingEntity livingEntity,
+                                                          int lootingLevel, boolean simulatePlayerKill) {
         FakePlayer fakePlayer = FakePlayerFactory.getMinecraft(serverLevel);
+        ItemStack previousHeldItem = fakePlayer.getMainHandItem().copy();
+        DamageSource damageSource = DamageSource.GENERIC;
+        boolean attackedRecently = false;
+        Collection<ItemEntity> previousCapture = livingEntity.captureDrops(new ArrayList<>());
 
         try {
             if (lootingLevel > 0) {
@@ -71,36 +71,39 @@ public class LootTableRoller {
                 fakePlayer.getInventory().items.set(fakePlayer.getInventory().selected, ItemStack.EMPTY);
             }
 
-            DamageSource damageSource = DamageSource.playerAttack(fakePlayer);
+            if (simulatePlayerKill) {
+                livingEntity.setLastHurtByPlayer(fakePlayer);
+                damageSource = DamageSource.playerAttack(fakePlayer);
+                attackedRecently = true;
+            }
 
-            LootContext.Builder builder = new LootContext.Builder(serverLevel)
-                    .withRandom(serverLevel.random)
-                    .withParameter(LootContextParams.THIS_ENTITY, temporaryEntity)
-                    .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
-                    .withParameter(LootContextParams.DAMAGE_SOURCE, damageSource)
-                    .withOptionalParameter(LootContextParams.KILLER_ENTITY, fakePlayer)
-                    .withOptionalParameter(LootContextParams.DIRECT_KILLER_ENTITY, fakePlayer)
-                    .withParameter(LootContextParams.LAST_DAMAGE_PLAYER, fakePlayer)
-                    .withLuck(fakePlayer.getLuck());
+            int effectiveLooting = attackedRecently
+                    ? ForgeHooks.getLootingLevel(livingEntity, damageSource.getEntity(), damageSource)
+                    : 0;
 
-            return new ArrayList<>(lootTable.getRandomItems(builder.create(LootContextParamSets.ENTITY)));
+            LivingEntityDropInvoker dropInvoker = (LivingEntityDropInvoker) livingEntity;
+            dropInvoker.mobprocessor$invokeDropFromLootTable(damageSource, attackedRecently);
+            dropInvoker.mobprocessor$invokeDropCustomDeathLoot(damageSource, effectiveLooting, attackedRecently);
+
+            Collection<ItemEntity> capturedDrops = livingEntity.captureDrops(previousCapture);
+            return toItemStacks(capturedDrops);
         } finally {
-            fakePlayer.getInventory().items.set(fakePlayer.getInventory().selected, ItemStack.EMPTY);
+            if (livingEntity.captureDrops() != previousCapture) {
+                livingEntity.captureDrops(previousCapture);
+            }
+            fakePlayer.getInventory().items.set(fakePlayer.getInventory().selected, previousHeldItem);
         }
     }
 
-    private static List<ItemStack> rollWithoutPlayerKill(ServerLevel serverLevel, BlockPos pos,
-                                                          Entity temporaryEntity, LootTable lootTable) {
-        DamageSource damageSource = DamageSource.GENERIC;
+    private static List<ItemStack> toItemStacks(Collection<ItemEntity> capturedDrops) {
+        if (capturedDrops == null || capturedDrops.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-        LootContext.Builder builder = new LootContext.Builder(serverLevel)
-                .withRandom(serverLevel.random)
-                .withParameter(LootContextParams.THIS_ENTITY, temporaryEntity)
-                .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos))
-                .withParameter(LootContextParams.DAMAGE_SOURCE, damageSource)
-                .withOptionalParameter(LootContextParams.KILLER_ENTITY, null)
-                .withOptionalParameter(LootContextParams.DIRECT_KILLER_ENTITY, null);
-
-        return new ArrayList<>(lootTable.getRandomItems(builder.create(LootContextParamSets.ENTITY)));
+        List<ItemStack> loot = new ArrayList<>(capturedDrops.size());
+        for (ItemEntity itemEntity : capturedDrops) {
+            loot.add(itemEntity.getItem().copy());
+        }
+        return loot;
     }
 }
