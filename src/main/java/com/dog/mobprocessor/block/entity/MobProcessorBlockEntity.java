@@ -27,11 +27,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -103,6 +105,10 @@ public class MobProcessorBlockEntity extends BlockEntity implements MenuProvider
             handleStorageDowngrade();
         }
     };
+
+    private LazyOptional<IItemHandler> combinedHandler = LazyOptional.empty();
+    private LazyOptional<IItemHandler> eggHandler = LazyOptional.empty();
+    private LazyOptional<IItemHandler> upgradeHandler = LazyOptional.empty();
 
     private final int[] slotCycleProgress = new int[MAX_EGG_SLOTS];
     private final Map<ResourceLocation, Long> itemsProducedPerMob = new HashMap<>();
@@ -432,6 +438,33 @@ public class MobProcessorBlockEntity extends BlockEntity implements MenuProvider
     @Override
     public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player player) {
         return new MobProcessorMenu(windowId, playerInventory, this);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        combinedHandler = LazyOptional.of(() -> new CombinedInvWrapper(eggInventory, upgradeInventory));
+        eggHandler = LazyOptional.of(() -> eggInventory);
+        upgradeHandler = LazyOptional.of(() -> upgradeInventory);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        combinedHandler.invalidate();
+        eggHandler.invalidate();
+        upgradeHandler.invalidate();
+    }
+
+    @NotNull
+    @Override
+    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+        if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            if (side == Direction.UP) return eggHandler.cast();
+            if (side == Direction.DOWN) return combinedHandler.cast();
+            return upgradeHandler.cast();
+        }
+        return super.getCapability(cap, side);
     }
 
     @Override
