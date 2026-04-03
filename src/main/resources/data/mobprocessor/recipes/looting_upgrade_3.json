@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " E ",
+    "NUN",
+    " N "
+  ],
+  "key": {
+    "E": { "item": "minecraft:emerald_block" },
+    "N": { "item": "minecraft:netherite_ingot" },
+    "U": { "item": "mobprocessor:looting_upgrade_2" }
+  },
+  "result": {
+    "item": "mobprocessor:looting_upgrade_3",
+    "count": 1
+  }
+}

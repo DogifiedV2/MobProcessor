@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " L ",
+    "DUD",
+    " D "
+  ],
+  "key": {
+    "L": { "item": "minecraft:lapis_block" },
+    "D": { "item": "minecraft:diamond" },
+    "U": { "item": "mobprocessor:looting_upgrade_1" }
+  },
+  "result": {
+    "item": "mobprocessor:looting_upgrade_2",
+    "count": 1
+  }
+}

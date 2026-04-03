@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "RUR",
+    " B "
+  ],
+  "key": {
+    "B": { "item": "minecraft:blaze_rod" },
+    "R": { "item": "minecraft:redstone_block" },
+    "U": { "item": "mobprocessor:speed_upgrade_1" }
+  },
+  "result": {
+    "item": "mobprocessor:speed_upgrade_2",
+    "count": 1
+  }
+}

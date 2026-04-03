@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ONO",
+    "ODO",
+    "ONO"
+  ],
+  "key": {
+    "O": { "item": "minecraft:obsidian" },
+    "N": { "item": "minecraft:nether_star" },
+    "D": { "item": "minecraft:diamond_block" }
+  },
+  "result": {
+    "item": "mobprocessor:mob_processor",
+    "count": 1
+  }
+}

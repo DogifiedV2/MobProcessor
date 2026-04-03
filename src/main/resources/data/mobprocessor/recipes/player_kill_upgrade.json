@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " W ",
+    "SNS",
+    " S "
+  ],
+  "key": {
+    "W": { "item": "minecraft:wither_skeleton_skull" },
+    "S": { "item": "minecraft:diamond_sword" },
+    "N": { "item": "minecraft:nether_star" }
+  },
+  "result": {
+    "item": "mobprocessor:player_kill_upgrade",
+    "count": 1
+  }
+}

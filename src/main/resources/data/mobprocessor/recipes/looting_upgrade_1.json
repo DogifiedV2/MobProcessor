@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " L ",
+    "GIG",
+    " G "
+  ],
+  "key": {
+    "L": { "item": "minecraft:lapis_lazuli" },
+    "G": { "item": "minecraft:gold_ingot" },
+    "I": { "item": "minecraft:iron_sword" }
+  },
+  "result": {
+    "item": "mobprocessor:looting_upgrade_1",
+    "count": 1
+  }
+}

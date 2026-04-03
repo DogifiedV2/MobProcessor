@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " E ",
+    "OUO",
+    " E "
+  ],
+  "key": {
+    "E": { "item": "minecraft:ender_chest" },
+    "O": { "item": "minecraft:obsidian" },
+    "U": { "item": "mobprocessor:storage_upgrade_2" }
+  },
+  "result": {
+    "item": "mobprocessor:storage_upgrade_3",
+    "count": 1
+  }
+}

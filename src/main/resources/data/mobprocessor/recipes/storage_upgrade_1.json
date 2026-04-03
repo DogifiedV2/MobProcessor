@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " C ",
+    "ICI",
+    " I "
+  ],
+  "key": {
+    "C": { "item": "minecraft:chest" },
+    "I": { "item": "minecraft:iron_ingot" }
+  },
+  "result": {
+    "item": "mobprocessor:storage_upgrade_1",
+    "count": 1
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " N ",
+    "BUB",
+    " N "
+  ],
+  "key": {
+    "N": { "item": "minecraft:nether_star" },
+    "B": { "item": "minecraft:blaze_rod" },
+    "U": { "item": "mobprocessor:speed_upgrade_2" }
+  },
+  "result": {
+    "item": "mobprocessor:speed_upgrade_3",
+    "count": 1
+  }
+}

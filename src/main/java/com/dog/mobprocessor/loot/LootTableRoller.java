@@ -50,7 +50,9 @@ public class LootTableRoller {
     private static void initializeSpawnState(Entity entity, ServerLevel serverLevel, BlockPos pos) {
         if (entity instanceof Mob mob) {
             DifficultyInstance difficulty = serverLevel.getCurrentDifficultyAt(pos);
-            mob.finalizeSpawn(serverLevel, difficulty, MobSpawnType.SPAWN_EGG, null, null);
+            try (LootSimulationGuard ignored = LootSimulationGuard.enter()) {
+                mob.finalizeSpawn(serverLevel, difficulty, MobSpawnType.SPAWN_EGG, null, null);
+            }
         }
     }
 

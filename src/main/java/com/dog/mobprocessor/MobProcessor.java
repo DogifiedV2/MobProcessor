@@ -8,12 +8,15 @@ import com.dog.mobprocessor.init.ModItems;
 import com.dog.mobprocessor.init.ModMenuTypes;
 import com.dog.mobprocessor.init.ModRecipeSerializers;
 import com.dog.mobprocessor.item.AugmentEggItem;
+import com.dog.mobprocessor.loot.LootSimulationGuard;
 import net.minecraft.client.gui.screens.MenuScreens;
 import com.dog.mobprocessor.item.SpawnEggLookup;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -38,6 +41,13 @@ public class MobProcessor {
         ModRecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, MobProcessorConfig.SPEC);
+        MinecraftForge.EVENT_BUS.addListener(MobProcessor::onEntityJoinLevel);
+    }
+
+    private static void onEntityJoinLevel(EntityJoinWorldEvent event) {
+        if (LootSimulationGuard.isActive()) {
+            event.setCanceled(true);
+        }
     }
 
     @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
